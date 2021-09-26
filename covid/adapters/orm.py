@@ -78,36 +78,3 @@ def map_model_to_tables():
         )
     })
 
-
-# Version using synonyms, which is slightly cleaner, since it alleviates the need for using strings
-# referring to private attributes in the database_repository, instead the properties can be used when
-# constructing filtering statements involving the domain object model.
-
-# def map_model_to_tables():
-#     print(model.User.__dict__)
-#     mapper(model.User, users_table, properties={
-#         'user_name': synonym('_User__user_name', map_column=True, descriptor=model.User.user_name),
-#         'password': synonym('_User__password', map_column=True, descriptor=model.User.password),
-#         '_User__comments': relationship(model.Comment, backref='_Comment__user')
-#     })
-#     mapper(model.Comment, comments_table, properties={
-#         'comment': synonym('_Comment__comment', map_column=True, descriptor=model.Comment.comment),
-#         'timestamp': synonym('_Comment__timestamp', map_column=True, descriptor=model.Comment.timestamp)
-#     })
-#     articles_mapper = mapper(model.Article, articles_table, properties={
-#         'id': synonym('_Article__id', map_column=True, descriptor=model.Article.id),
-#         'date': synonym('_Article__date', map_column=True, descriptor=model.Article.date),
-#         'title': synonym('_Article__title', map_column=True, descriptor=model.Article.title),
-#         'first_paragraph': synonym('_Article__first_paragraph', map_column=True, descriptor=model.Article.first_paragraph),
-#         'hyperlink': synonym('_Article__hyperlink', map_column=True, descriptor=model.Article.hyperlink),
-#         'image_hyperlink': synonym('_Article__image_hyperlink', map_column=True, descriptor=model.Article.image_hyperlink),
-#         '_Article__comments': relationship(model.Comment, backref='_Comment__article')
-#     })
-#     mapper(model.Tag, tags_table, properties={
-#         'tag_name': synonym('_Tag__tag_name', map_column=True, descriptor=model.Tag.tag_name),
-#         '_Tag__tagged_articles': relationship(
-#             articles_mapper,
-#             secondary=article_tags_table,
-#             backref="_Article__tags"
-#         )
-#     })

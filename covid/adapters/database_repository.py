@@ -10,8 +10,6 @@ from flask import _app_ctx_stack
 from covid.domain.model import User, Article, Comment, Tag
 from covid.adapters.repository import AbstractRepository
 
-#tags = None
-
 
 class SessionContextManager:
     def __init__(self, session_factory):
@@ -64,7 +62,6 @@ class SqlAlchemyRepository(AbstractRepository):
     def get_user(self, user_name: str) -> User:
         user = None
         try:
-            #user = self._session_cm.session.query(User).filter(User.user_name == user_name).one()
             user = self._session_cm.session.query(User).filter(User._User__user_name == user_name).one()
         except NoResultFound:
             # Ignore any exception and return None.
@@ -80,7 +77,6 @@ class SqlAlchemyRepository(AbstractRepository):
     def get_article(self, id: int) -> Article:
         article = None
         try:
-            #article = self._session_cm.session.query(Article).filter(Article.id == id).one()
             article = self._session_cm.session.query(Article).filter(Article._Article__id == id).one()
         except NoResultFound:
             # Ignore any exception and return None.
@@ -94,7 +90,6 @@ class SqlAlchemyRepository(AbstractRepository):
             return articles
         else:
             # Return articles matching target_date; return an empty list if there are no matches.
-            #articles = self._session_cm.session.query(Article).filter(Article.date == target_date).all()
             articles = self._session_cm.session.query(Article).filter(Article._Article__date == target_date).all()
             return articles
 
@@ -107,12 +102,10 @@ class SqlAlchemyRepository(AbstractRepository):
         return article
 
     def get_last_article(self):
-        #article = self._session_cm.session.query(Article).order_by(desc(Article.id)).first()
         article = self._session_cm.session.query(Article).order_by(desc(Article._Article__id)).first()
         return article
 
     def get_articles_by_id(self, id_list: List[int]):
-        #articles = self._session_cm.session.query(Article).filter(Article.id.in_(id_list)).all()
         articles = self._session_cm.session.query(Article).filter(Article._Article__id.in_(id_list)).all()
         return articles
 
@@ -138,7 +131,6 @@ class SqlAlchemyRepository(AbstractRepository):
 
     def get_date_of_previous_article(self, article: Article):
         result = None
-        #prev_article = self._session_cm.session.query(Article).filter(Article.date < article.date).order_by(desc(Article.date)).first()
         prev_article = self._session_cm.session.query(Article).filter(Article._Article__date < article.date).order_by(desc(Article._Article__date)).first()
 
         if prev_article is not None:
@@ -148,7 +140,6 @@ class SqlAlchemyRepository(AbstractRepository):
 
     def get_date_of_next_article(self, article: Article):
         result = None
-        #next_article = self._session_cm.session.query(Article).filter(Article.date > article.date).order_by(asc(Article.date)).first()
         next_article = self._session_cm.session.query(Article).filter(Article._Article__date > article.date).order_by(asc(Article._Article__date)).first()
 
         if next_article is not None:
@@ -174,121 +165,3 @@ class SqlAlchemyRepository(AbstractRepository):
         with self._session_cm as scm:
             scm.session.add(comment)
             scm.commit()
-
-# def article_record_generator(filename: str):
-#     with open(filename, mode='r', encoding='utf-8-sig') as infile:
-#         reader = csv.reader(infile)
-#
-#         # Read first line of the CSV file.
-#         headers = next(reader)
-#
-#         # Read remaining rows from the CSV file.
-#         for row in reader:
-#
-#             article_data = row
-#             article_key = article_data[0]
-#
-#             # Strip any leading/trailing white space from data read.
-#             article_data = [item.strip() for item in article_data]
-#
-#             number_of_tags = len(article_data) - 6
-#             article_tags = article_data[-number_of_tags:]
-#
-#             # Add any new tags; associate the current article with tags.
-#             for tag in article_tags:
-#                 if tag not in tags.keys():
-#                     tags[tag] = list()
-#                 tags[tag].append(article_key)
-#
-#             del article_data[-number_of_tags:]
-#
-#             yield article_data
-#
-#
-# def get_tag_records():
-#     tag_records = list()
-#     tag_key = 0
-#
-#     for tag in tags.keys():
-#         tag_key = tag_key + 1
-#         tag_records.append((tag_key, tag))
-#     return tag_records
-#
-#
-# def article_tags_generator():
-#     article_tags_key = 0
-#     tag_key = 0
-#
-#     for tag in tags.keys():
-#         tag_key = tag_key + 1
-#         for article_key in tags[tag]:
-#             article_tags_key = article_tags_key + 1
-#             yield article_tags_key, article_key, tag_key
-#
-#
-# def generic_generator(filename, post_process=None):
-#     with open(filename) as infile:
-#         reader = csv.reader(infile)
-#
-#         # Read first line of the CSV file.
-#         next(reader)
-#
-#         # Read remaining rows from the CSV file.
-#         for row in reader:
-#             # Strip any leading/trailing white space from data read.
-#             row = [item.strip() for item in row]
-#
-#             if post_process is not None:
-#                 row = post_process(row)
-#             yield row
-#
-#
-# def process_user(user_row):
-#     user_row[2] = generate_password_hash(user_row[2])
-#     return user_row
-#
-#
-# def populate(engine: Engine, data_path: Path):
-#     conn = engine.raw_connection()
-#     cursor = conn.cursor()
-#
-#     users_filename = str(Path(data_path) / "users.csv")
-#     comments_filename = str(Path(data_path) / "comments.csv")
-#     articles_filename = str(Path(data_path) / "news_articles.csv")
-#
-#     global tags
-#     tags = dict()
-#
-#     insert_articles = """
-#         INSERT INTO articles (
-#         id, date, title, first_paragraph, hyperlink, image_hyperlink)
-#         VALUES (?, ?, ?, ?, ?, ?)"""
-#     cursor.executemany(insert_articles, article_record_generator(articles_filename))
-#
-#     insert_tags = """
-#         INSERT INTO tags (
-#         id, tag_name)
-#         VALUES (?, ?)"""
-#     cursor.executemany(insert_tags, get_tag_records())
-#
-#     insert_article_tags = """
-#         INSERT INTO article_tags (
-#         id, article_id, tag_id)
-#         VALUES (?, ?, ?)"""
-#     cursor.executemany(insert_article_tags, article_tags_generator())
-#
-#     insert_users = """
-#         INSERT INTO users (
-#         id, user_name, password)
-#         VALUES (?, ?, ?)"""
-#     cursor.executemany(insert_users, generic_generator(users_filename, process_user))
-#
-#     insert_comments = """
-#         INSERT INTO comments (
-#         id, user_id, article_id, comment, timestamp)
-#         VALUES (?, ?, ?, ?, ?)"""
-#     cursor.executemany(insert_comments, generic_generator(comments_filename))
-#
-#     conn.commit()
-#     conn.close()
-
